@@ -90,21 +90,26 @@ textarea:focus{border-color:var(--p);outline:none}
   .grade{grid-template-columns:1fr}
 }
 
-/* Cabeçalho das matérias */
-.titulo-materias {
+
+/* Cabeçalho da lista de matérias */
+.cabecalho-materias {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
-  margin-top: 24px;
+  gap: 14px;
+  margin-top: 28px;
 }
 
-.titulo-materias h2 {
+.cabecalho-materias h2 {
   margin: 0;
 }
 
-/* Formulário de nova matéria */
+.cabecalho-materias .btn {
+  margin: 0;
+}
+
+/* Formulário para adicionar matéria */
 .form-materia {
   display: flex;
   flex-direction: column;
@@ -135,10 +140,16 @@ textarea:focus{border-color:var(--p);outline:none}
   outline-offset: 1px;
 }
 
-.form-materia .btn {
-  margin-top: 8px;
-}
+@media (max-width: 520px) {
+  .cabecalho-materias {
+    align-items: stretch;
+    flex-direction: column;
+  }
 
+  .cabecalho-materias .btn {
+    width: 100%;
+  }
+}
 @media (max-width: 520px) {
   .titulo-materias .btn {
     width: 100%;
