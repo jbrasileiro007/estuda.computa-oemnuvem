@@ -26,14 +26,14 @@ async function home() {
 
     <div class="titulo-materias">
       <h2>Matérias</h2>
-      <button class="btn" id="adicionar-materia">
+      <button type="button" class="btn" id="adicionar-materia">
         + Adicionar matéria
       </button>
     </div>
 
     <div class="grade">
       ${ms.map((m) => `
-        <button class="cartao" data-m="${esc(m.id)}">
+        <button type="button" class="cartao" data-m="${esc(m.id)}">
           <span class="ico">${esc(m.icone)}</span>
           <strong>${esc(m.nome)}</strong>
         </button>
