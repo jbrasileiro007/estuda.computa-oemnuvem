@@ -282,5 +282,70 @@ function final() {
   $("#hm").onclick = home;
 }
 
+
+function adicionarMateria() {
+  tela(`
+    <button class="voltar" id="cancelar">Voltar</button>
+    <h2>Adicionar matéria</h2>
+    <p class="sub">Cadastre uma nova matéria para estudar.</p>
+
+    <form id="form-materia" class="form-materia">
+      <label for="nome-materia">Nome da matéria</label>
+      <input
+        id="nome-materia"
+        name="nome"
+        type="text"
+        placeholder="Ex.: Inteligência Artificial"
+        maxlength="60"
+        required
+      >
+
+      <label for="icone-materia">Ícone ou abreviação</label>
+      <input
+        id="icone-materia"
+        name="icone"
+        type="text"
+        placeholder="Ex.: IA"
+        maxlength="6"
+        value="📚"
+      >
+
+      <button type="submit" class="btn">Adicionar matéria</button>
+    </form>
+  `, "adicionar");
+
+  $("#cancelar").onclick = home;
+
+  $("#form-materia").onsubmit = async (event) => {
+    event.preventDefault();
+
+    const nome = $("#nome-materia").value.trim();
+    const icone = $("#icone-materia").value.trim() || "📚";
+
+    if (!nome) return;
+
+    const materias = await Repo.materias();
+
+    if (materias.some(
+      (m) => m.nome.toLowerCase() === nome.toLowerCase()
+    )) {
+      alert("Essa matéria já existe!");
+      return;
+    }
+
+    const id = "materia-" + crypto.randomUUID();
+
+    BANCO.materias.push({ id, nome, icone });
+
+    BANCO.questoes[id] = {
+      abertas: [],
+      fechadas: [],
+      escolha: []
+    };
+
+    home();
+  };
+}
+
 $("#marca").onclick = home;
 home();
