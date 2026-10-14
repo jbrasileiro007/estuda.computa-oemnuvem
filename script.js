@@ -146,19 +146,7 @@ const contar = () => ({
 /* =====================================================================
    4. TELAS
    ===================================================================== */
-async function home() {
-  const ms = await Repo.materias();
-  tela(`
-    <div class="hero">
-      <h1 class="logo">Estuda<span>+</span></h1>
-      <p>Escolha uma matéria e pratique com questões abertas, fechadas e de escolha.</p>
-    </div>
-    <h2>Matérias</h2>
-    <div class="grade">${ms.map((m) => `
-      <button class="cartao" data-m="${m.id}"><span class="ico">${m.icone}</span><strong>${m.nome}</strong></button>`).join("")}
-    </div>`, "home");
-  app.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => tipos(ms.find((m) => m.id === b.dataset.m))));
-}
+
 
 function tipos(materia) {
   S.materia = materia;
