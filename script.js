@@ -109,9 +109,31 @@ const TIPOS = [
      async materias(){ return (await fetch("/api/materias")).json(); }
      async questoes(m,t){ return (await fetch(`/api/questoes?materia=${m}&tipo=${t}`)).json(); }
    ===================================================================== */
+const CHAVE = "estuda_banco_v1";
+const ORIGINAL = JSON.stringify(BANCO);
+try { const salvo = localStorage.getItem(CHAVE); if (salvo) Object.assign(BANCO, JSON.parse(salvo)); } catch {}
+const salvar = () => { try { localStorage.setItem(CHAVE, JSON.stringify(BANCO)); } catch {} };
+
 const Repo = {
   async materias() { return BANCO.materias; },
-  async questoes(materiaId, tipoId) { return BANCO.questoes[materiaId][tipoId]; },
+  async questoes(materiaId, tipoId) { return (BANCO.questoes[materiaId] || {})[tipoId] || []; },
+  async salvarMateria(m) {
+    const i = BANCO.materias.findIndex((x) => x.id === m.id);
+    i < 0 ? BANCO.materias.push(m) : (BANCO.materias[i] = m);
+    salvar();
+  },
+  async removerMateria(id) {
+    BANCO.materias = BANCO.materias.filter((m) => m.id !== id);
+    delete BANCO.questoes[id];
+    salvar();
+  },
+  async adicionarQuestao(id, tipo, q) {
+    const g = (BANCO.questoes[id] ??= {});
+    (g[tipo] ??= []).push(q);
+    salvar();
+  },
+  async removerQuestao(id, tipo, i) { BANCO.questoes[id][tipo].splice(i, 1); salvar(); },
+  async restaurar() { Object.assign(BANCO, JSON.parse(ORIGINAL)); salvar(); },
 };
 
 /* =====================================================================
@@ -146,16 +168,31 @@ const contar = () => ({
 /* =====================================================================
    4. TELAS
    ===================================================================== */
+async function home() {
+  const ms = await Repo.materias();
+  tela(`
+    <div class="hero">
+      <button class="btn sec editar" id="ed">Editar</button>
+      <h1 class="logo">Estuda<span>+</span></h1>
+      <p>Escolha uma matéria e pratique com questões abertas, fechadas e de escolha.</p>
+    </div>
+    <h2>Matérias</h2>
+    <div class="grade">${ms.map((m) => `
+      <button class="cartao" data-m="${m.id}"><span class="ico">${esc(m.icone)}</span><strong>${esc(m.nome)}</strong></button>`).join("") || `<p class="sub">Nenhuma matéria ainda. Use Editar para criar a primeira.</p>`}
+    </div>`, "home");
+  $("#ed").onclick = editor;
+  app.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => tipos(ms.find((m) => m.id === b.dataset.m))));
+}
 
-
-function tipos(materia) {
+async function tipos(materia) {
   S.materia = materia;
+  const cont = await Promise.all(TIPOS.map((t) => Repo.questoes(materia.id, t.id)));
   tela(`
     <button class="voltar" id="v">Voltar</button>
-    <h2>${materia.nome}</h2>
+    <h2>${esc(materia.nome)}</h2>
     <p class="sub">Que tipo de atividade você quer fazer?</p>
-    <div class="grade">${TIPOS.map((t) => `
-      <button class="cartao" data-t="${t.id}"><strong>${t.nome}</strong><span>${t.desc}</span></button>`).join("")}
+    <div class="grade">${TIPOS.map((t, k) => `
+      <button class="cartao" data-t="${t.id}" ${cont[k].length ? "" : "disabled"}><strong>${t.nome}</strong><span>${t.desc}</span><span>${cont[k].length} questões</span></button>`).join("")}
     </div>`, "tipos");
   $("#v").onclick = home;
   app.querySelectorAll("[data-t]").forEach((b) => (b.onclick = () => iniciar(TIPOS.find((t) => t.id === b.dataset.t))));
@@ -213,7 +250,7 @@ function questao() {
       <div class="stat e">Erros<b>${er}</b></div>
     </div>
     <div class="barra" role="progressbar" aria-valuenow="${fe}" aria-valuemax="${n}"><i style="width:${(fe / n) * 100}%"></i></div>
-    <p class="contagem">Questão ${S.i + 1} de ${n} · ${S.materia.nome}</p>
+    <p class="contagem">Questão ${S.i + 1} de ${n} · ${esc(S.materia.nome)}</p>
     <div class="q">
       <h3>${esc(q.p)}</h3>
       ${dica ? `<p class="dica">${dica}</p>` : ""}
@@ -252,7 +289,7 @@ function final() {
   const msg = pct >= 80 ? "Excelente desempenho!" : pct >= 50 ? "Bom caminho. Vale revisar os erros." : "Continue praticando, você chega lá.";
   tela(`
     <h2>Resultado</h2>
-    <p class="sub">${S.materia.nome} · atividades ${S.tipo.nome.toLowerCase()}</p>
+    <p class="sub">${esc(S.materia.nome)} · atividades ${S.tipo.nome.toLowerCase()}</p>
     <div class="anel" style="--p:${pct}"><strong>${pct}%</strong></div>
     <p>${msg}</p>
     <div class="placar">
@@ -270,10 +307,141 @@ function final() {
   $("#hm").onclick = home;
 }
 
+/* =====================================================================
+   5. MODO DE EDIÇÃO (matérias e questões)
+   ===================================================================== */
+async function editor() {
+  const ms = await Repo.materias();
+  tela(`
+    <button class="voltar" id="v">Voltar</button>
+    <h2>Editar matérias</h2>
+    <p class="sub">As alterações ficam salvas neste navegador.</p>
+    <div class="lista">${ms.map((m) => `
+      <div class="linha" data-id="${m.id}">
+        <input class="in ic" value="${esc(m.icone)}" maxlength="4" aria-label="Ícone">
+        <input class="in nm" value="${esc(m.nome)}" aria-label="Nome da matéria">
+        <button class="btn sec" data-q>Questões</button>
+        <button class="btn sec" data-x>Excluir</button>
+      </div>`).join("")}
+    </div>
+    <h3 class="tit">Nova matéria</h3>
+    <div class="linha">
+      <input class="in ic" id="ni" placeholder="Ícone" maxlength="4" aria-label="Ícone">
+      <input class="in nm" id="nn" placeholder="Nome da matéria" aria-label="Nome da nova matéria">
+      <button class="btn" id="na">Adicionar</button>
+    </div>
+    <button class="btn sec" id="rs" style="margin-top:32px">Restaurar exemplos</button>`, "editor");
 
+  $("#v").onclick = home;
+  app.querySelectorAll(".linha[data-id]").forEach((row) => {
+    const m = ms.find((x) => x.id === row.dataset.id);
+    const [ic, nm] = row.querySelectorAll("input");
+    const grava = async () => {
+      if (!nm.value.trim()) return editor();
+      await Repo.salvarMateria({ ...m, nome: nm.value.trim(), icone: ic.value.trim() || m.icone });
+    };
+    ic.onchange = nm.onchange = grava;
+    row.querySelector("[data-q]").onclick = async () => { await grava(); editorQuestoes((await Repo.materias()).find((x) => x.id === m.id)); };
+    row.querySelector("[data-x]").onclick = async () => {
+      if (confirm(`Excluir "${m.nome}" e todas as suas questões?`)) { await Repo.removerMateria(m.id); editor(); }
+    };
+  });
+  $("#na").onclick = async () => {
+    const nome = $("#nn").value.trim();
+    if (!nome) return $("#nn").focus();
+    await Repo.salvarMateria({ id: "m" + Date.now().toString(36), nome, icone: $("#ni").value.trim() || nome.slice(0, 2).toUpperCase() });
+    editor();
+  };
+  $("#rs").onclick = async () => { if (confirm("Voltar às matérias e questões de exemplo? Suas alterações serão perdidas.")) { await Repo.restaurar(); editor(); } };
+}
 
-  
+const formQuestao = () => `
+  <div class="form">
+    <label>Tipo<select id="ft" class="in">${TIPOS.map((t) => `<option value="${t.id}">${t.nome}</option>`).join("")}</select></label>
+    <label id="fs-w">Formato<select id="fs" class="in">
+      <option value="unica">Única resposta (ex.: I ou II)</option>
+      <option value="vf">Verdadeiro ou Falso</option>
+      <option value="multi">Várias respostas corretas</option></select></label>
+    <label>Enunciado<textarea id="fp" class="in" placeholder="Em questões I ou II, coloque cada afirmação em uma linha."></textarea></label>
+    <label id="fr-w">Resposta modelo<textarea id="fr" class="in"></textarea></label>
+    <div id="fo-w">
+      <p class="dica">Alternativas (deixe em branco as que não usar) e marque a correta.</p>
+      <div id="fo" class="lista"></div>
+      <button class="btn sec" id="fm" type="button" style="margin-top:12px">Adicionar alternativa</button>
+    </div>
+    <label id="fe-w">Explicação<textarea id="fe" class="in"></textarea></label>
+    <p class="av" id="av" role="alert"></p>
+    <button class="btn" id="fa">Adicionar questão</button>
+  </div>`;
 
+function desenharForm(mais = false) {
+  const t = $("#ft").value, s = $("#fs").value;
+  const isE = t === "escolha", vf = isE && s === "vf", multi = isE && s === "multi";
+  $("#fs-w").hidden = !isE;
+  $("#fr-w").hidden = t !== "abertas";
+  $("#fo-w").hidden = $("#fe-w").hidden = t === "abertas";
+  $("#fm").hidden = vf;
+  if (t === "abertas") return;
+  const ant = [...app.querySelectorAll("#fo .tx:not([readonly])")].map((i) => i.value);
+  const marc = ant.length ? [...app.querySelectorAll("#fo input[name=c]:checked")].map((i) => +i.value) : [];
+  let tx = vf ? VF : ant.length >= 2 ? ant : ["", "", "", ""];
+  if (mais && !vf && tx.length < 6) tx = [...tx, ""];
+  $("#fo").innerHTML = tx.map((v, i) => `
+    <div class="linha"><input type="${multi ? "checkbox" : "radio"}" name="c" aria-label="Correta">
+    <input class="in nm tx" value="${esc(v)}" placeholder="Alternativa ${i + 1}" ${vf ? "readonly" : ""}></div>`).join("");
+  const caixas = app.querySelectorAll("#fo input[name=c]");
+  marc.forEach((i) => caixas[i] && (caixas[i].checked = true));
+}
+
+async function salvarQuestao(m) {
+  const aviso = (txt) => ($("#av").textContent = txt);
+  const t = $("#ft").value, p = $("#fp").value.trim();
+  if (!p) return aviso("Escreva o enunciado.");
+  let q;
+  if (t === "abertas") {
+    const r = $("#fr").value.trim();
+    if (!r) return aviso("Escreva a resposta modelo.");
+    q = { p, r };
+  } else {
+    const L = [...app.querySelectorAll("#fo .linha")]
+      .map((l) => ({ t: l.querySelector(".tx").value.trim(), ok: l.querySelector("input[name=c]").checked }))
+      .filter((x) => x.t);
+    if (L.length < 2) return aviso("Preencha ao menos duas alternativas.");
+    const c = L.map((x, i) => (x.ok ? i : -1)).filter((i) => i >= 0);
+    if (!c.length) return aviso("Marque a alternativa correta.");
+    const e = $("#fe").value.trim() || "Sem explicação cadastrada.";
+    const o = L.map((x) => x.t);
+    q = t === "fechadas" ? { p, o, c, e } : { p, o, c, m: $("#fs").value === "multi", e };
+  }
+  await Repo.adicionarQuestao(m.id, t, q);
+  editorQuestoes(m, "Questão adicionada.");
+}
+
+async function editorQuestoes(m, msg = "") {
+  const grupos = await Promise.all(TIPOS.map(async (t) => [t, await Repo.questoes(m.id, t.id)]));
+  tela(`
+    <button class="voltar" id="v">Voltar</button>
+    <h2>${esc(m.nome)}</h2>
+    <p class="sub">Veja, exclua ou adicione questões.</p>
+    ${grupos.map(([t, qs]) => `
+      <h3 class="tit">${t.nome} (${qs.length})</h3>
+      <div class="lista">${qs.map((q, i) => `
+        <div class="linha"><span class="enun">${esc(q.p)}</span><button class="btn sec" data-x="${t.id}:${i}">Excluir</button></div>`).join("") || `<p class="sub">Nenhuma questão.</p>`}
+      </div>`).join("")}
+    <h3 class="tit">Nova questão</h3>
+    ${formQuestao()}`, "editor");
+
+  $("#v").onclick = editor;
+  app.querySelectorAll("[data-x]").forEach((b) => (b.onclick = async () => {
+    const [t, i] = b.dataset.x.split(":");
+    if (confirm("Excluir esta questão?")) { await Repo.removerQuestao(m.id, t, +i); editorQuestoes(m); }
+  }));
+  $("#ft").onchange = $("#fs").onchange = () => desenharForm();
+  $("#fm").onclick = () => desenharForm(true);
+  $("#fa").onclick = () => salvarQuestao(m);
+  desenharForm();
+  if (msg) $("#av").textContent = msg;
+}
 
 $("#marca").onclick = home;
 home();
