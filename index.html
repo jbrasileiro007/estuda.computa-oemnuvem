@@ -14,6 +14,43 @@
     <button id="marca" class="marca" aria-label="Voltar ao início">Estuda<span>+</span></button>
   </header>
   <main id="app" aria-live="polite"></main>
+
+async function home() {
+  const ms = await Repo.materias();
+
+  tela(`
+    <div class="hero">
+      <h1 class="logo">Estuda<span>+</span></h1>
+      <p>Escolha uma matéria e pratique com questões abertas, fechadas e de escolha.</p>
+    </div>
+
+    <div class="titulo-materias">
+      <h2>Matérias</h2>
+      <button class="btn" id="adicionar-materia">
+        + Adicionar matéria
+      </button>
+    </div>
+
+    <div class="grade">
+      ${ms.map((m) => `
+        <button class="cartao" data-m="${esc(m.id)}">
+          <span class="ico">${esc(m.icone)}</span>
+          <strong>${esc(m.nome)}</strong>
+        </button>
+      `).join("")}
+    </div>
+  `, "home");
+
+  $("#adicionar-materia").onclick = adicionarMateria;
+
+  app.querySelectorAll("[data-m]").forEach((b) => {
+    b.onclick = () => {
+      const materia = ms.find((m) => m.id === b.dataset.m);
+      if (materia) tipos(materia);
+    };
+  });
+}
+  
   <script src="script.js"></script>
 </body>
 </html>
