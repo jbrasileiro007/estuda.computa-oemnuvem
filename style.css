@@ -89,70 +89,26 @@ textarea:focus{border-color:var(--p);outline:none}
   .nav .btn,.nav .voltar{flex:1}
   .grade{grid-template-columns:1fr}
 }
-
-
-/* Cabeçalho da lista de matérias */
-.cabecalho-materias {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 28px;
-}
-
-.cabecalho-materias h2 {
-  margin: 0;
-}
-
-.cabecalho-materias .btn {
-  margin: 0;
-}
-
-/* Formulário para adicionar matéria */
-.form-materia {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
-  padding: 22px;
-  background: var(--card);
-  border: 1.5px solid var(--linha);
-  border-radius: var(--r);
-}
-
-.form-materia label {
-  font-weight: 600;
-}
-
-.form-materia input {
-  width: 100%;
-  padding: 12px;
-  border: 1.5px solid var(--linha);
-  border-radius: 12px;
-  font: inherit;
-  background: #fff;
-  color: var(--tinta);
-}
-
-.form-materia input:focus {
-  outline: 2px solid var(--p);
-  outline-offset: 1px;
-}
-
-@media (max-width: 520px) {
-  .cabecalho-materias {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .cabecalho-materias .btn {
-    width: 100%;
-  }
-}
-@media (max-width: 520px) {
-  .titulo-materias .btn {
-    width: 100%;
-  }
-}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Modo de edição */
+[hidden]{display:none!important}
+.hero{position:relative}
+.editar{position:absolute;top:16px;right:0;padding:8px 18px}
+.cartao:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;border-color:var(--linha)}
+.lista{display:grid;gap:10px;margin-top:12px}
+.linha{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.linha .btn{padding:9px 14px}
+.in{font:inherit;padding:10px 12px;border:1.5px solid var(--linha);border-radius:12px;background:#fff;color:var(--tinta);width:100%}
+.in:focus{border-color:var(--p);outline:none}
+.linha .nm{flex:1 1 180px;width:auto}
+.linha .ic{flex:0 0 72px;width:72px;text-align:center}
+.linha .btn.sec[data-x]:hover{border-color:var(--no);color:var(--no)}
+.tit{font-size:1.1rem;margin:28px 0 0}
+.enun{flex:1 1 240px;white-space:pre-line}
+.form{display:grid;gap:14px;margin-top:14px;background:var(--card);border:1.5px solid var(--linha);border-radius:var(--r);padding:20px}
+.form label{display:grid;gap:6px;font-weight:600;font-size:.92rem}
+.form textarea{min-height:90px;margin:0}
+.form .linha input[type=radio],.form .linha input[type=checkbox]{accent-color:var(--p);width:20px;height:20px;flex:none}
+.form .btn{margin:0;justify-self:start}
+.av{margin:0;color:var(--p2);font-weight:600;min-height:1.2em}
