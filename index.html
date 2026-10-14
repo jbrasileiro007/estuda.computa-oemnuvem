@@ -17,27 +17,6 @@
 
 
 
-  tela(`
-    <div class="hero">
-      <h1 class="logo">Estuda<span>+</span></h1>
-      <p>Escolha uma matéria e pratique com questões abertas, fechadas e de escolha.</p>
-    </div>
-
-    <div class="titulo-materias">
-      <h2>Matérias</h2>
-      <button type="button" class="btn" id="adicionar-materia">
-        + Adicionar matéria
-      </button>
-    </div>
-
-    <div class="grade">
-      ${ms.map((m) => `
-        <button type="button" class="cartao" data-m="${esc(m.id)}">
-          <span class="ico">${esc(m.icone)}</span>
-          <strong>${esc(m.nome)}</strong>
-        </button>
-      `).join("")}
-    </div>
  
   
   <script src="script.js"></script>
