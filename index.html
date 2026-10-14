@@ -39,17 +39,7 @@ async function home() {
         </button>
       `).join("")}
     </div>
-  `, "home");
-
-  $("#adicionar-materia").onclick = adicionarMateria;
-
-  app.querySelectorAll("[data-m]").forEach((b) => {
-    b.onclick = () => {
-      const materia = ms.find((m) => m.id === b.dataset.m);
-      if (materia) tipos(materia);
-    };
-  });
-}
+ 
   
   <script src="script.js"></script>
 </body>
