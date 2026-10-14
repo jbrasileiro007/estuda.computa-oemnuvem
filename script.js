@@ -283,36 +283,6 @@ function final() {
 }
 
 
-function adicionarMateria() {
-  tela(`
-    <button class="voltar" id="cancelar">Voltar</button>
-    <h2>Adicionar matéria</h2>
-    <p class="sub">Cadastre uma nova matéria para estudar.</p>
-
-    <form id="form-materia" class="form-materia">
-      <label for="nome-materia">Nome da matéria</label>
-      <input
-        id="nome-materia"
-        name="nome"
-        type="text"
-        placeholder="Ex.: Inteligência Artificial"
-        maxlength="60"
-        required
-      >
-
-      <label for="icone-materia">Ícone ou abreviação</label>
-      <input
-        id="icone-materia"
-        name="icone"
-        type="text"
-        placeholder="Ex.: IA"
-        maxlength="6"
-        value="📚"
-      >
-
-      <button type="submit" class="btn">Adicionar matéria</button>
-    </form>
-  `, "adicionar");
 
   
 
