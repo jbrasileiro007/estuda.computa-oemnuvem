@@ -89,4 +89,59 @@ textarea:focus{border-color:var(--p);outline:none}
   .nav .btn,.nav .voltar{flex:1}
   .grade{grid-template-columns:1fr}
 }
+
+/* Cabeçalho das matérias */
+.titulo-materias {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.titulo-materias h2 {
+  margin: 0;
+}
+
+/* Formulário de nova matéria */
+.form-materia {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 22px;
+  background: var(--card);
+  border: 1.5px solid var(--linha);
+  border-radius: var(--r);
+}
+
+.form-materia label {
+  font-weight: 600;
+}
+
+.form-materia input {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid var(--linha);
+  border-radius: 12px;
+  font: inherit;
+  background: #fff;
+  color: var(--tinta);
+}
+
+.form-materia input:focus {
+  outline: 2px solid var(--p);
+  outline-offset: 1px;
+}
+
+.form-materia .btn {
+  margin-top: 8px;
+}
+
+@media (max-width: 520px) {
+  .titulo-materias .btn {
+    width: 100%;
+  }
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
