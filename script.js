@@ -314,38 +314,8 @@ function adicionarMateria() {
     </form>
   `, "adicionar");
 
-  $("#cancelar").onclick = home;
+  
 
-  $("#form-materia").onsubmit = async (event) => {
-    event.preventDefault();
-
-    const nome = $("#nome-materia").value.trim();
-    const icone = $("#icone-materia").value.trim() || "📚";
-
-    if (!nome) return;
-
-    const materias = await Repo.materias();
-
-    if (materias.some(
-      (m) => m.nome.toLowerCase() === nome.toLowerCase()
-    )) {
-      alert("Essa matéria já existe!");
-      return;
-    }
-
-    const id = "materia-" + crypto.randomUUID();
-
-    BANCO.materias.push({ id, nome, icone });
-
-    BANCO.questoes[id] = {
-      abertas: [],
-      fechadas: [],
-      escolha: []
-    };
-
-    home();
-  };
-}
 
 $("#marca").onclick = home;
 home();
